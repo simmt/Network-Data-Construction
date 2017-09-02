@@ -4,6 +4,7 @@ library(reshape2)
 ######Tax data
 international_tax_data<-read.csv("~/Desktop/Network Data Construction/ICTDGRD_June2016_CentralGeneralMerged/Merged-Table 1.csv")
 names(international_tax_data)[names(international_tax_data)=="Calendar.year..nearest."] <- "Year"
+
 #Likeness & Covariates#
 ######GDP per cap, Population
 international_econ_data<-read.csv("~/Desktop/Network Data Construction/Data_Extract_From_World_Development_Indicators (5) 2/country_stats.csv")
@@ -12,11 +13,7 @@ international_econ_data$Pop<-as.numeric(international_econ_data$Population..tota
 international_econ_data$GINI<-as.numeric(international_econ_data$GINI.index..World.Bank.estimate...SI.POV.GINI.)
 international_econ_data$ISO<-international_econ_data$Country.Code
 international_econ_data$Year<-international_econ_data$Time
-plot(GINI~log(GDP_cap), data = international_econ_data[international_econ_data$Time == "2006",])
-summary(lm(GINI~log(GDP_cap), data = international_econ_data[international_econ_data$Time == "2006",]))
-library(lfe)
-summary(felm(GINI~log(GDP_cap)+Time|ISO, data = international_econ_data))
-summary(international_econ_data$GINI)
+
 ######Polity
 ##add polity score
 polity<-read.csv("~/Desktop/Network Data Construction/Polity/p4v2014.csv")
@@ -46,12 +43,6 @@ WTO_mem$importer1<-as.factor(countrycode(WTO_mem$importer1a, "country.name",  "i
 international_tax_data$Social_Security<-as.numeric(sub("%", "", international_tax_data$Social.contributions))
 #international_tax_data$Corp<-as.numeric(sub("%", "", international_tax_data$Corp))
 international_tax_data$Corporate<-as.numeric(sub("%", "", international_tax_data$Corporations.and.other.enterprises))
-international_tax_data$Inco<-as.numeric(sub("%", "", international_tax_data$Income))
-international_tax_data$Sales<-as.numeric(sub("%", "", international_tax_data$Taxes.on.goods.and.services..of.which.Taxes.on.Sales))
-international_tax_data$Reves<-as.numeric(sub("%", "", international_tax_data$TotRev))
-
-
-
 ###now, industrial composition
 indus_comp<-read.csv("~/Desktop/Network Data Construction/Competitive_Manu/high_tech_comp.csv", header = TRUE)
 indus_comp<-indus_comp[indus_comp$Indicator=="Competitive Industrial Performance Score",]
@@ -72,8 +63,8 @@ gdp_data_tnam<-international_econ_data[,c("ISO",
                                           "GDP_cap")]
 
 pop_data_tnam<-international_econ_data[,c("ISO", 
-                                        "Year",
-                                       "Pop")]
+                                          "Year",
+                                          "Pop")]
 #polity$ISO<-polity$scode
 polity_data_tnam<-polity[,c("ISO", "Year","polity2")]
 
@@ -191,19 +182,19 @@ WTO_final<-droplevels(WTO_tnam[WTO_tnam$ISO %in% intersection_2, ])
 #
 #fix these
 soc_tax_data_tnam<-na.omit(merge_6[,c("ISO", 
-                                                     "Year",
-                                                     "Social_Security")])
+                                      "Year",
+                                      "Social_Security")])
 corp_tax_data_tnam<-merge_6[,c("ISO", 
-                                              "Year",
-                                              "Corporate")]
+                               "Year",
+                               "Corporate")]
 
 ######Onto IVs as covariates
 gdp_data_tnam<-merge_6[,c("ISO", 
-                                          "Year",
-                                          "GDP_cap")]
+                          "Year",
+                          "GDP_cap")]
 
 pop_data_tnam<-merge_6[,c("ISO", "Year",
-                                          "Pop")]
+                          "Pop")]
 #polity$ISO<-polity$scode
 polity_data_tnam<-merge_6[,c("ISO", "Year","polity2")]
 
@@ -219,36 +210,36 @@ corp_tax_data_tnam$ISO <- as.character(corp_tax_data_tnam$ISO)
 widedata <- reshape(soc_tax_data_tnam, timevar = "Year", v.names = c("Social_Security"),
                     idvar = c("ISO"), direction = "wide")
 widedata_c <- reshape(corp_tax_data_tnam, timevar = "Year", v.names = c("Corporate"),
-                    idvar = c("ISO"), direction = "wide")
+                      idvar = c("ISO"), direction = "wide")
 
-widedata$Social_Security.1993[is.na(widedata$Social_Security.1993)]<-0
-widedata$Social_Security.1994[is.na(widedata$Social_Security.1994)]<-0
+widedata$Social_Security.1989[is.na(widedata$Social_Security.1989)]<-0
+widedata$Social_Security.1992[is.na(widedata$Social_Security.1992)]<-0
 widedata$Social_Security.1995[is.na(widedata$Social_Security.1995)]<-0
-widedata$Social_Security.1996[is.na(widedata$Social_Security.1996)]<-0
-widedata$Social_Security.1997[is.na(widedata$Social_Security.1997)]<-0
+widedata$Social_Security.1998[is.na(widedata$Social_Security.1998)]<-0
+widedata$Social_Security.2001[is.na(widedata$Social_Security.2001)]<-0
 
-soc93 <- widedata$Social_Security.1993
+soc93 <- widedata$Social_Security.1989
 names(soc93) <- widedata$ISO
-soc94 <- widedata$Social_Security.1994
+soc94 <- widedata$Social_Security.1992
 names(soc94) <- widedata$ISO
 soc95 <- widedata$Social_Security.1995
 names(soc95) <- widedata$ISO
-soc96 <- widedata$Social_Security.1996
+soc96 <- widedata$Social_Security.1998
 names(soc96) <- widedata$ISO
-soc97 <- widedata$Social_Security.1997
+soc97 <- widedata$Social_Security.2001
 names(soc97) <- widedata$ISO
 
 labor <- list(t1 = soc93, t2 = soc94, t3 = soc95, t4 = soc96, t5 = soc97)
 
-cor93 <- widedata_c$Corporate.1993
+cor93 <- widedata_c$Corporate.1989
 names(cor93) <- widedata_c$ISO
-cor94 <- widedata_c$Corporate.1994
+cor94 <- widedata_c$Corporate.1992
 names(cor94) <- widedata_c$ISO
 cor95 <- widedata_c$Corporate.1995
 names(cor95) <- widedata_c$ISO
-cor96 <- widedata_c$Corporate.1996
+cor96 <- widedata_c$Corporate.1998
 names(cor96) <- widedata_c$ISO
-cor97 <- widedata_c$Corporate.1997
+cor97 <- widedata_c$Corporate.2001
 names(cor97) <- widedata_c$ISO
 
 capital <- list(t1 = cor93, t2 = cor94, t3 = cor95, t4 = cor96, t5 = cor97)
@@ -263,15 +254,15 @@ capital <- list(t1 = cor93, t2 = cor94, t3 = cor95, t4 = cor96, t5 = cor97)
 gdp_data_tnam$ISO <- as.character(gdp_data_tnam$ISO)
 widedata <- reshape(gdp_data_tnam, timevar = "Year", v.names = c("GDP_cap"),
                     idvar = c("ISO"), direction = "wide")
-gdp93 <- log(widedata$GDP_cap.1993)
+gdp93 <- log(widedata$GDP_cap.1989)
 names(gdp93) <- widedata$ISO
-gdp94 <- log(widedata$GDP_cap.1994)
+gdp94 <- log(widedata$GDP_cap.1992)
 names(gdp94) <- widedata$ISO
 gdp95 <- log(widedata$GDP_cap.1995)
 names(gdp95) <- widedata$ISO
-gdp96 <- log(widedata$GDP_cap.1996)
+gdp96 <- log(widedata$GDP_cap.1998)
 names(gdp96) <- widedata$ISO
-gdp97 <- log(widedata$GDP_cap.1997)
+gdp97 <- log(widedata$GDP_cap.2001)
 names(gdp97) <- widedata$ISO
 
 gdp_at_threse <- list(t1 = gdp93, t2 = gdp94, t3 = gdp95, t4 = gdp96, t5 = gdp97)
@@ -279,8 +270,8 @@ gdp_at_threse <- list(t1 = gdp93, t2 = gdp94, t3 = gdp95, t4 = gdp96, t5 = gdp97
 
 gdp_data_tnam_sim<-merge(gdp_data_tnam, soc_tax_data_tnam, by = c("ISO", "Year"), all.y = TRUE)
 gdp_data_tnam_sim<-gdp_data_tnam_sim[,c("ISO", 
-                                "Year",
-                                "GDP_cap")]
+                                        "Year",
+                                        "GDP_cap")]
 gdp_data_tnam_sim$GDP_cap[is.na(gdp_data_tnam_sim$GDP_cap)]<-100
 widedata <- reshape(gdp_data_tnam_sim, timevar = "Year", v.names = c("GDP_cap"),
                     idvar = c("ISO"), direction = "wide")
@@ -401,7 +392,7 @@ WTO_members <- list(t1 = wto93, t2 = wto94, t3 = wto95, t4 = wto96, t5 = wto97)
 #Trade_dyads_abc_trades$Year[Trade_dyads_abc_trades$Year>1]<-0
 
 trade_edgy_listy<-trade_edge_final
-links <- na.omit(as.matrix(trade_edgy_listy[trade_edgy_listy$Year=="1993",]))
+links <- na.omit(as.matrix(trade_edgy_listy[trade_edgy_listy$Year=="1989",]))
 labels <- unique(c(links[,2], links[,3]))
 ordering <- sort(labels) # put into alphabetical order
 adjmat <- matrix(0, length(labels), length(labels))
@@ -410,7 +401,7 @@ rownames(adjmat) <- ordering
 adjmat[links[,2:3]] <- as.numeric(links[,4])
 
 
-links <- na.omit(as.matrix(trade_edgy_listy[trade_edgy_listy$Year=="1994",]))
+links <- na.omit(as.matrix(trade_edgy_listy[trade_edgy_listy$Year=="1992",]))
 labels <- unique(c(links[,2], links[,3]))
 ordering <- sort(labels) # put into alphabetical order
 adjmat1 <- matrix(0, length(labels), length(labels))
@@ -428,7 +419,7 @@ rownames(adjmat2) <- ordering
 adjmat2[links[,2:3]] <- as.numeric(links[,4])
 
 
-links <- na.omit(as.matrix(trade_edgy_listy[trade_edgy_listy$Year=="1996",]))
+links <- na.omit(as.matrix(trade_edgy_listy[trade_edgy_listy$Year=="1998",]))
 labels <- unique(c(links[,2], links[,3]))
 ordering <- sort(labels) # put into alphabetical order
 adjmat3 <- matrix(0, length(labels), length(labels))
@@ -437,7 +428,7 @@ rownames(adjmat3) <- ordering
 adjmat3[links[,2:3]] <- as.numeric(links[,4])
 
 
-links <- na.omit(as.matrix(trade_edgy_listy[trade_edgy_listy$Year=="1997",]))
+links <- na.omit(as.matrix(trade_edgy_listy[trade_edgy_listy$Year=="2001",]))
 labels <- unique(c(links[,2], links[,3]))
 ordering <- sort(labels) # put into alphabetical order
 adjmat4 <- matrix(0, length(labels), length(labels))
@@ -450,16 +441,16 @@ hga <- list(t1 = adjmat, t2 = adjmat1,
             t3 = adjmat2, t4 = adjmat3, 
             t5 = adjmat4) # create list from oldest to newest. This will be the outcome object for TERGM analysis
 
-  ######make WTO as network
-WTO_trade_a
-WTO_a<-WTO_tnam[,c("ISO", "1993")]
+######make WTO as network
+
+WTO_a<-WTO_tnam[,c("ISO", "1989")]
 colnames(WTO_a)<-c("ISO", "WTO_mem")
 WTO_trade_a<-merge(trade_edgy_listy, WTO_a, by = "ISO")
 WTO_trade_a<-WTO_trade_a[,c("ISO", "ISO_source", "WTO_mem", "Year")]
 WTO_trade_a$WTO_mem_new<-0
 WTO_trade_a$WTO_mem_new<-WTO_trade_a$WTO_mem
 WTO_trade_a$WTO_mem_new[WTO_trade_a$WTO_mem_new=="NA"]<-0
-links <- na.omit(as.matrix(WTO_trade_a[WTO_trade_a$Year=="1993",]))
+links <- na.omit(as.matrix(WTO_trade_a[WTO_trade_a$Year=="1989",]))
 
 labels <- unique(c(links[,1], links[,2]))
 ordering <- sort(labels) # put into alphabetical order
@@ -469,14 +460,14 @@ rownames(adjmat) <- ordering
 adjmat[links[,1:2]] <- as.numeric(links[,5])
 
 
-WTO_a<-WTO_tnam[,c("ISO", "1994")]
+WTO_a<-WTO_tnam[,c("ISO", "1992")]
 colnames(WTO_a)<-c("ISO", "WTO_mem")
 WTO_trade_a<-merge(trade_edgy_listy, WTO_a, by = "ISO")
 WTO_trade_a<-WTO_trade_a[,c("ISO", "ISO_source", "WTO_mem", "Year")]
 WTO_trade_a$WTO_mem_new<-0
 WTO_trade_a$WTO_mem_new<-WTO_trade_a$WTO_mem
 WTO_trade_a$WTO_mem_new[WTO_trade_a$WTO_mem_new=="NA"]<-0
-links <- na.omit(as.matrix(WTO_trade_a[WTO_trade_a$Year=="1994",]))
+links <- na.omit(as.matrix(WTO_trade_a[WTO_trade_a$Year=="1992",]))
 
 labels <- unique(c(links[,1], links[,2]))
 ordering <- sort(labels) # put into alphabetical order
@@ -504,14 +495,14 @@ adjmat2[links[,1:2]] <- as.numeric(links[,5])
 adjmat2
 
 
-WTO_a<-WTO_tnam[,c("ISO", "1996")]
+WTO_a<-WTO_tnam[,c("ISO", "1998")]
 colnames(WTO_a)<-c("ISO", "WTO_mem")
 WTO_trade_a<-merge(trade_edgy_listy, WTO_a, by = "ISO")
 WTO_trade_a<-WTO_trade_a[,c("ISO", "ISO_source", "WTO_mem", "Year")]
 WTO_trade_a$WTO_mem_new<-0
 WTO_trade_a$WTO_mem_new<-WTO_trade_a$WTO_mem
 WTO_trade_a$WTO_mem_new[WTO_trade_a$WTO_mem_new=="NA"]<-0
-links <- na.omit(as.matrix(WTO_trade_a[WTO_trade_a$Year=="1996",]))
+links <- na.omit(as.matrix(WTO_trade_a[WTO_trade_a$Year=="1998",]))
 
 labels <- unique(c(links[,1], links[,2]))
 ordering <- sort(labels) # put into alphabetical order
@@ -521,14 +512,14 @@ rownames(adjmat3) <- ordering
 adjmat3[links[,1:2]] <- as.numeric(links[,5])
 
 
-WTO_a<-WTO_tnam[,c("ISO", "1997")]
+WTO_a<-WTO_tnam[,c("ISO", "2001")]
 colnames(WTO_a)<-c("ISO", "WTO_mem")
 WTO_trade_a<-merge(trade_edgy_listy, WTO_a, by = "ISO")
 WTO_trade_a<-WTO_trade_a[,c("ISO", "ISO_source", "WTO_mem", "Year")]
 WTO_trade_a$WTO_mem_new<-0
 WTO_trade_a$WTO_mem_new<-WTO_trade_a$WTO_mem
 WTO_trade_a$WTO_mem_new[WTO_trade_a$WTO_mem_new=="NA"]<-0
-links <- na.omit(as.matrix(WTO_trade_a[WTO_trade_a$Year=="1997",]))
+links <- na.omit(as.matrix(WTO_trade_a[WTO_trade_a$Year=="2001",]))
 
 labels <- unique(c(links[,1], links[,2]))
 ordering <- sort(labels) # put into alphabetical order
@@ -544,7 +535,7 @@ WTO_member_growth<-list(t1 = adjmat, t2 = adjmat1, t3 = adjmat2, t4 = adjmat3, t
 
 
 ####indus_comp_final
-indus_comp_final_sub_a<-indus_comp_final[,c("Country.ISO3", "X1993")]
+indus_comp_final_sub_a<-indus_comp_final[,c("Country.ISO3", "X1989")]
 colnames(indus_comp_final_sub_a)<-c("ISO", "Indus_Comp")
 indus_comp_final_a<-merge(trade_edgy_listy, indus_comp_final_sub_a, by = "ISO")
 indus_comp_final_a<-merge(indus_comp_final_a, indus_comp_final_sub_a, by.x = "ISO_source", by.y = "ISO")
@@ -554,7 +545,7 @@ indus_comp_final_a$Indus_Comp_Corr<-(indus_comp_final_a$Indus_Comp.x)/(indus_com
 indus_comp_final_a$Indus_Comp_Corr[indus_comp_final_a$Indus_Comp_Corr>1]<-(indus_comp_final_a$Indus_Comp_Corr[indus_comp_final_a$Indus_Comp_Corr>1])^(-1)
 indus_comp_tnam<-indus_comp_final_a[,c("ISO", "ISO_source", "Indus_Comp_Corr", "Year")]
 
-links <- na.omit(as.matrix(indus_comp_tnam[indus_comp_tnam$Year=="1993",]))
+links <- na.omit(as.matrix(indus_comp_tnam[indus_comp_tnam$Year=="1989",]))
 labels <- unique(c(links[,1], links[,2]))
 ordering <- sort(labels) # put into alphabetical order
 adjmat <- matrix(0, length(labels), length(labels))
@@ -562,7 +553,7 @@ colnames(adjmat) <- ordering
 rownames(adjmat) <- ordering
 adjmat[links[,1:2]] <- as.numeric(links[,3])
 
-indus_comp_final_sub_a<-indus_comp_final[,c("Country.ISO3", "X1994")]
+indus_comp_final_sub_a<-indus_comp_final[,c("Country.ISO3", "X1992")]
 colnames(indus_comp_final_sub_a)<-c("ISO", "Indus_Comp")
 indus_comp_final_a<-merge(trade_edgy_listy, indus_comp_final_sub_a, by = "ISO")
 indus_comp_final_a<-merge(indus_comp_final_a, indus_comp_final_sub_a, by.x = "ISO_source", by.y = "ISO")
@@ -572,7 +563,7 @@ indus_comp_final_a$Indus_Comp_Corr<-(indus_comp_final_a$Indus_Comp.x)/(indus_com
 indus_comp_final_a$Indus_Comp_Corr[indus_comp_final_a$Indus_Comp_Corr>1]<-(indus_comp_final_a$Indus_Comp_Corr[indus_comp_final_a$Indus_Comp_Corr>1])^(-1)
 indus_comp_tnam<-indus_comp_final_a[,c("ISO", "ISO_source", "Indus_Comp_Corr", "Year")]
 
-links <- na.omit(as.matrix(indus_comp_tnam[indus_comp_tnam$Year=="1994",]))
+links <- na.omit(as.matrix(indus_comp_tnam[indus_comp_tnam$Year=="1992",]))
 labels <- unique(c(links[,1], links[,2]))
 ordering <- sort(labels) # put into alphabetical order
 adjmat1 <- matrix(0, length(labels), length(labels))
@@ -598,7 +589,7 @@ colnames(adjmat2) <- ordering
 rownames(adjmat2) <- ordering
 adjmat2[links[,1:2]] <- as.numeric(links[,3])
 
-indus_comp_final_sub_a<-indus_comp_final[,c("Country.ISO3", "X1996")]
+indus_comp_final_sub_a<-indus_comp_final[,c("Country.ISO3", "X1998")]
 colnames(indus_comp_final_sub_a)<-c("ISO", "Indus_Comp")
 indus_comp_final_a<-merge(trade_edgy_listy, indus_comp_final_sub_a, by = "ISO")
 indus_comp_final_a<-merge(indus_comp_final_a, indus_comp_final_sub_a, by.x = "ISO_source", by.y = "ISO")
@@ -608,7 +599,7 @@ indus_comp_final_a$Indus_Comp_Corr<-(indus_comp_final_a$Indus_Comp.x)/(indus_com
 indus_comp_final_a$Indus_Comp_Corr[indus_comp_final_a$Indus_Comp_Corr>1]<-(indus_comp_final_a$Indus_Comp_Corr[indus_comp_final_a$Indus_Comp_Corr>1])^(-1)
 indus_comp_tnam<-indus_comp_final_a[,c("ISO", "ISO_source", "Indus_Comp_Corr", "Year")]
 
-links <- na.omit(as.matrix(indus_comp_tnam[indus_comp_tnam$Year=="1996",]))
+links <- na.omit(as.matrix(indus_comp_tnam[indus_comp_tnam$Year=="1998",]))
 labels <- unique(c(links[,1], links[,2]))
 ordering <- sort(labels) # put into alphabetical order
 adjmat3 <- matrix(0, length(labels), length(labels))
@@ -616,7 +607,7 @@ colnames(adjmat3) <- ordering
 rownames(adjmat3) <- ordering
 adjmat3[links[,1:2]] <- as.numeric(links[,3])
 
-indus_comp_final_sub_a<-indus_comp_final[,c("Country.ISO3", "X1997")]
+indus_comp_final_sub_a<-indus_comp_final[,c("Country.ISO3", "X2001")]
 colnames(indus_comp_final_sub_a)<-c("ISO", "Indus_Comp")
 indus_comp_final_a<-merge(trade_edgy_listy, indus_comp_final_sub_a, by = "ISO")
 indus_comp_final_a<-merge(indus_comp_final_a, indus_comp_final_sub_a, by.x = "ISO_source", by.y = "ISO")
@@ -626,7 +617,7 @@ indus_comp_final_a$Indus_Comp_Corr<-(indus_comp_final_a$Indus_Comp.x)/(indus_com
 indus_comp_final_a$Indus_Comp_Corr[indus_comp_final_a$Indus_Comp_Corr>1]<-(indus_comp_final_a$Indus_Comp_Corr[indus_comp_final_a$Indus_Comp_Corr>1])^(-1)
 indus_comp_tnam<-indus_comp_final_a[,c("ISO", "ISO_source", "Indus_Comp_Corr", "Year")]
 
-links <- na.omit(as.matrix(indus_comp_tnam[indus_comp_tnam$Year=="1997",]))
+links <- na.omit(as.matrix(indus_comp_tnam[indus_comp_tnam$Year=="2001",]))
 labels <- unique(c(links[,1], links[,2]))
 ordering <- sort(labels) # put into alphabetical order
 adjmat4 <- matrix(0, length(labels), length(labels))
@@ -684,28 +675,28 @@ tnam_poli<-tnam(labor ~ covariate(poli, coefname = "polity")
                 , re.node = TRUE, time.linear = TRUE)
 tnam_nodes<-tnam(labor ~ 
                    covariate(gdp_at_threse, coefname = "gdp_cap")
-                +covariate(pop_at_threse, coefname = "population")
-                +covariate(poli, coefname = "polity")
-                , re.node = TRUE, time.linear = TRUE)
-tnam_dv_lag_nodes<-tnam(labor ~ covariate(gdp_at_threse, coefname = "gdp_cap")
                  +covariate(pop_at_threse, coefname = "population")
                  +covariate(poli, coefname = "polity")
                  , re.node = TRUE, time.linear = TRUE)
+tnam_dv_lag_nodes<-tnam(labor ~ covariate(labor, lag = 1) + covariate(gdp_at_threse, coefname = "gdp_cap")
+                        +covariate(pop_at_threse, coefname = "population")
+                        +covariate(poli, coefname = "polity")
+                        , re.node = TRUE, time.linear = TRUE)
 
 screenreg(list(tnam_gdpcap, tnam_nodes, tnam_dv_lag_nodes), single.row = TRUE)
 #####initial results conclusion: gdp/cap and lag term
 ####capital
 tnamc_gdpcap<-tnam(capital ~ covariate(gdp_at_threse, coefname = "gdp_cap")
-                  , re.node = TRUE, time.linear = TRUE)
+                   , re.node = TRUE, time.linear = TRUE)
 tnamc_pop<-tnam(capital ~ covariate(pop_at_threse, coefname = "population")
-               , re.node = TRUE, time.linear = TRUE)
-tnamc_poli<-tnam(capital ~ covariate(poli, coefname = "polity")
                 , re.node = TRUE, time.linear = TRUE)
-tnamc_nodes<-tnam(capital ~ 
-                   covariate(gdp_at_threse, coefname = "gdp_cap")
-                 +covariate(pop_at_threse, coefname = "population")
-                 +covariate(poli, coefname = "polity")
+tnamc_poli<-tnam(capital ~ covariate(poli, coefname = "polity")
                  , re.node = TRUE, time.linear = TRUE)
+tnamc_nodes<-tnam(capital ~ covariate(capital, lag = 1) +
+                    covariate(gdp_at_threse, coefname = "gdp_cap")
+                  +covariate(pop_at_threse, coefname = "population")
+                  +covariate(poli, coefname = "polity")
+                  , re.node = TRUE, time.linear = TRUE)
 screenreg(list(tnamc_gdpcap, tnamc_pop, tnamc_poli, tnamc_nodes), single.row = TRUE)
 texreg(list(tnamc_gdpcap, tnamc_pop, tnamc_poli, tnamc_nodes), single.row = FALSE)
 
@@ -718,30 +709,31 @@ texreg(list(tnam_nodes, tnamc_nodes), single.row = FALSE)
 #tnam_wto<-tnam(labor ~ covariate(WTO_members, lag = 1, coefname = "WTO_member_node")
 #               , re.node = TRUE, time.linear = TRUE)
 tnam_wto<-tnam(labor ~ netlag(labor, WTO_member_growth, lag = 1, coefname = "WTO_member")
-                         , re.node = TRUE, time.linear = TRUE)
-tnam_trade<-tnam(labor ~ weightlag(labor, hga, lag = 1, coefname = "Dyadic_Trade")
                , re.node = TRUE, time.linear = TRUE)
+tnam_trade<-tnam(labor ~ weightlag(labor, hga, lag = 1, coefname = "Dyadic_Trade")
+                 , re.node = TRUE, time.linear = TRUE)
 tnam_indus<-tnam(labor ~ weightlag(labor, industry_sim, lag = 1, coefname = "Industry_Corr")
                  , re.node = TRUE, time.linear = TRUE)
-tnam_all_spatial<-tnam(labor ~ netlag(labor, WTO_member_growth, lag = 1, coefname = "WTO_member")
-                 +weightlag(labor, hga, lag = 1, coefname = "Dyadic_Trade")
-                 +weightlag(labor, industry_sim, lag = 1, coefname = "Industry_Corr")
-                 , re.node = TRUE, time.linear = TRUE)
+#seems to matter if lag term is in
+tnam_all_spatial<-tnam(labor ~  covariate(labor, lag = 1) + netlag(labor, WTO_member_growth, lag = 1, coefname = "WTO_member")
+                       +weightlag(labor, hga, lag = 1, coefname = "Dyadic_Trade")
+                       +weightlag(labor, industry_sim, lag = 1, coefname = "Industry_Corr")
+                       , re.node = TRUE, time.linear = TRUE)
 screenreg(list(tnam_wto, tnam_trade, tnam_indus, tnam_all_spatial), single.row = FALSE, digits = 4)
 
 
 ###corp
-capital
+
 tnamc_wto<-tnam(capital ~ netlag(capital, WTO_member_growth, lag = 1, coefname = "WTO_member")
-               , re.node = TRUE, time.linear = TRUE)
+                , re.node = TRUE, time.linear = TRUE)
 tnamc_trade<-tnam(capital ~ netlag(capital, hga, lag = 1, coefname = "Dyadic_Trade")
-                 , re.node = TRUE, time.linear = TRUE)
+                  , re.node = TRUE, time.linear = TRUE)
 tnamc_indus<-tnam(capital ~ netlag(capital, industry_sim, lag = 1, coefname = "Industry_Corr")
-                 , re.node = TRUE, time.linear = TRUE)
-tnamc_all_spatial<-tnam(capital ~ netlag(capital, WTO_member_growth, lag = 1, coefname = "WTO_member")
-                       +netlag(capital, hga, lag = 1, coefname = "Dyadic_Trade")
-                       +netlag(capital, industry_sim, lag = 1, coefname = "Industry_Corr")
-                       , re.node = TRUE, time.linear = TRUE)
+                  , re.node = TRUE, time.linear = TRUE)
+tnamc_all_spatial<-tnam(capital ~ covariate(capital, lag = 1) + netlag(capital, WTO_member_growth, lag = 1, coefname = "WTO_member")
+                        +netlag(capital, hga, lag = 1, coefname = "Dyadic_Trade")
+                        +netlag(capital, industry_sim, lag = 1, coefname = "Industry_Corr")
+                        , re.node = TRUE, time.linear = TRUE)
 screenreg(list(tnamc_wto, tnamc_trade, tnamc_indus, tnamc_all_spatial), single.row = FALSE, digits = 4)
 texreg(list(tnam_all_spatial, tnamc_all_spatial), single.row = FALSE)
 
@@ -749,92 +741,68 @@ texreg(list(tnam_all_spatial, tnamc_all_spatial), single.row = FALSE)
 
 ####
 ####now, interaction of spatial stuff
-tnam_wto_trade<-tnam(labor ~ covariate(labor, lag = 1) + covariate(gdp_at_threse, coefname = "GDP/Capita")
-                       +netlag(labor, WTO_member_growth, lag = 1, coefname = "WTO_mem")
-                + weightlag(labor, hga, lag = 1, coefname = "Trade_ij")
-                 + interact(netlag(labor, WTO_member_growth),
-                            weightlag(labor, hga), lag = 1, coefname = "WTO*Trade_ij")
-               , re.node = TRUE, time.linear = TRUE)
-tnam_wto_induscorr<-tnam(labor ~ covariate(labor, lag = 1) +covariate(gdp_at_threse, coefname = "GDP/Capita")
-                 + netlag(labor, WTO_member_growth, lag = 1, coefname = "WTO_mem")
-               + weightlag(labor, industry_sim, lag = 1, coefname = "Industry_corr_ij")
-               + interact(netlag(labor, WTO_member_growth),
-                          weightlag(labor, industry_sim), lag = 1, coefname = "WTO*Industry_corr_ij")
-               , re.node = TRUE, time.linear = TRUE)
-tnam_wto_sep_induscorr<-tnam(labor ~ covariate(labor, lag = 1) + covariate(gdp_at_threse, coefname = "GDP/Capita")
-                           +netlag(labor, WTO_member_growth, lag = 1, coefname = "WTO_mem")
+tnam_wto_trade<-tnam(labor ~ 
+                      # covariate(labor, lag = 1) + 
+                       covariate(gdp_at_threse, coefname = "GDP/Capita")
+                     +netlag(labor, WTO_member_growth, lag = 1, coefname = "WTO_mem")
+                     + weightlag(labor, hga, lag = 1, coefname = "Trade_ij")
+                     + interact(netlag(labor, WTO_member_growth),
+                                weightlag(labor, hga), lag = 1, coefname = "WTO*Trade_ij")
+                     , re.node = TRUE, time.linear = TRUE)
+tnam_wto_induscorr<-tnam(labor ~ 
+                           #covariate(labor, lag = 1) +
+                           covariate(gdp_at_threse, coefname = "GDP/Capita")
+                         + netlag(labor, WTO_member_growth, lag = 1, coefname = "WTO_mem")
                          + weightlag(labor, industry_sim, lag = 1, coefname = "Industry_corr_ij")
-                         + weightlag(labor, hga, lag = 1, coefname = "Trade_ij")
-                         + interact(netlag(labor, WTO_member_growth),
-                                    weightlag(labor, hga), lag = 1, , coefname = "WTO*Trade_ij")
                          + interact(netlag(labor, WTO_member_growth),
                                     weightlag(labor, industry_sim), lag = 1, coefname = "WTO*Industry_corr_ij")
                          , re.node = TRUE, time.linear = TRUE)
+tnam_wto_sep_induscorr<-tnam(labor ~ 
+                               #covariate(labor, lag = 1) + 
+                               covariate(gdp_at_threse, coefname = "GDP/Capita")
+                             +netlag(labor, WTO_member_growth, lag = 1, coefname = "WTO_mem")
+                             + weightlag(labor, industry_sim, lag = 1, coefname = "Industry_corr_ij")
+                             + weightlag(labor, hga, lag = 1, coefname = "Trade_ij")
+                             + interact(netlag(labor, WTO_member_growth),
+                                        weightlag(labor, hga), lag = 1, , coefname = "WTO*Trade_ij")
+                             + interact(netlag(labor, WTO_member_growth),
+                                        weightlag(labor, industry_sim), lag = 1, coefname = "WTO*Industry_corr_ij")
+                             , re.node = TRUE, time.linear = TRUE)
 #tnam_wto_induscorr_trade<-tnam(labor ~ 
- #                        netlag(labor, WTO_member_growth, lag = 1, coefname = "WTO_mem")
-  #                       + weightlag(labor, industry_sim, lag = 1)
-   #                      +weightlag(labor, hga, lag = 1)
-    #                     + interact(netlag(labor, WTO_member_growth),
-     #                               weightlag(labor, industry_sim), lag = 1, center = TRUE)
-      #                   + interact(netlag(labor, WTO_member_growth),
-       #                             weightlag(labor, hga), lag = 1, center = TRUE)
-        #                 +interact(interact(netlag(labor, WTO_member_growth),
-         #                                   weightlag(labor, industry_sim), lag = 1, center = TRUE),
-          #                         interact(netlag(labor, WTO_member_growth),
-           #                                 weightlag(labor, hga), lag = 1, center = TRUE), coefname = "totality")
-            #             , re.node = TRUE, time.linear = TRUE)
+#                        netlag(labor, WTO_member_growth, lag = 1, coefname = "WTO_mem")
+#                       + weightlag(labor, industry_sim, lag = 1)
+#                      +weightlag(labor, hga, lag = 1)
+#                     + interact(netlag(labor, WTO_member_growth),
+#                               weightlag(labor, industry_sim), lag = 1, center = TRUE)
+#                   + interact(netlag(labor, WTO_member_growth),
+#                             weightlag(labor, hga), lag = 1, center = TRUE)
+#                 +interact(interact(netlag(labor, WTO_member_growth),
+#                                   weightlag(labor, industry_sim), lag = 1, center = TRUE),
+#                         interact(netlag(labor, WTO_member_growth),
+#                                 weightlag(labor, hga), lag = 1, center = TRUE), coefname = "totality")
+#             , re.node = TRUE, time.linear = TRUE)
 screenreg(list(tnam_wto_trade, tnam_wto_induscorr, tnam_wto_sep_induscorr), single.row = FALSE, digits = 7)
 texreg(list(tnam_wto_trade, tnam_wto_induscorr, tnam_wto_sep_induscorr), single.row = FALSE, digits = 4)
 
-tnamc_wto_trade<-tnam(capital ~ covariate(capital, lag = 1) + covariate(gdp_at_threse, coefname = "GDP/Capita")
-                   + netlag(capital, WTO_member_growth, lag = 1, coefname = "WTO_mem")
-                     + netlag(capital, hga, lag = 1, coefname = "Trade_ij")
-                     + interact(netlag(capital, WTO_member_growth),
-                                netlag(capital, hga), lag = 1, coefname = "WTO*Trade_ij")
-                     , re.node = TRUE, time.linear = TRUE)
-tnamc_wto_induscorr<-tnam(capital ~ covariate(capital, lag = 1) + covariate(gdp_at_threse, coefname = "GDP/Capita")
+tnamc_wto_trade<-tnam(capital ~ 
+                        #covariate(capital, lag = 1) + 
+                        covariate(gdp_at_threse, coefname = "GDP/Capita")
+                      + netlag(capital, WTO_member_growth, lag = 1, coefname = "WTO_mem")
+                      + netlag(capital, hga, lag = 1, coefname = "Trade_ij")
+                      + interact(netlag(capital, WTO_member_growth),
+                                 netlag(capital, hga), lag = 1, coefname = "WTO*Trade_ij")
+                      , re.node = TRUE, time.linear = TRUE)
+tnamc_wto_induscorr<-tnam(capital ~ 
+                           # covariate(capital, lag = 1) + 
+                            covariate(gdp_at_threse, coefname = "GDP/Capita")
                           + netlag(capital, WTO_member_growth, lag = 1, coefname = "WTO_mem")
-                         + netlag(capital, industry_sim, lag = 1, coefname = "Industry_corr_ij")
-                         + interact(netlag(capital, WTO_member_growth),
-                                    netlag(capital, industry_sim), lag = 1, coefname = "WTO*Industry_corr_ij")
-                         , re.node = TRUE, time.linear = TRUE)
-tnamc_wto_sep_induscorr<-tnam(capital ~ covariate(capital, lag = 1) + covariate(gdp_at_threse, coefname = "GDP/Capita")
-                              + netlag(capital, WTO_member_growth, lag = 1, coefname = "WTO_mem")
-                             + netlag(capital, industry_sim, lag = 1, coefname = "Industry_corr_ij")
-                             + netlag(capital, hga, lag = 1, coefname = "Trade_ij")
-                             + interact(netlag(capital, WTO_member_growth),
-                                        netlag(capital, hga), lag = 1, , coefname = "WTO*Trade_ij")
-                             + interact(netlag(capital, WTO_member_growth),
-                                        netlag(capital, industry_sim), lag = 1, coefname = "WTO*Industry_corr_ij")
-                             , re.node = TRUE, time.linear = TRUE)
-screenreg(list(tnamc_wto_trade, tnamc_wto_induscorr, tnamc_wto_sep_induscorr), single.row = FALSE, digits = 7)
-texreg(list(tnamc_wto_trade, tnamc_wto_induscorr, tnamc_wto_sep_induscorr), single.row = FALSE, digits = 4)
-
-
-
-tnam_wto_induscorr_trade<-tnam(labor ~ covariate(labor, lag = 1) + covariate(gdp_at_threse, coefname = "GDP/Capita")
-                      + netlag(labor, WTO_member_growth, lag = 2, coefname = "WTO_mem")
-                       + netlag(labor, industry_sim, lag = 2)
-                      +netlag(labor, hga, lag = 2)
-                     + interact(netlag(labor, WTO_member_growth),
-                                netlag(labor, industry_sim), lag = 2, center = TRUE)
-                   + interact(netlag(labor, WTO_member_growth),
-                              netlag(labor, hga), lag = 2, center = TRUE)
-                 +interact(interact(netlag(labor, WTO_member_growth),
-                                    netlag(labor, industry_sim), lag = 2, center = TRUE),
-                         interact(netlag(labor, WTO_member_growth),
-                                  netlag(labor, hga), lag = 2, center = TRUE), coefname = "totality")
-             , re.node = TRUE, time.linear = TRUE)
-screenreg(tnam_wto_induscorr_trade, digits = 10)
-tnam_wto_induscorr_trade<-tnam(capital ~ covariate(capital, lag = 1) + covariate(gdp_at_threse, coefname = "GDP/Capita")
-                               +interact(interact(netlag(capital, WTO_member_growth),
-                                                  netlag(capital, industry_sim), lag = 2, center = TRUE),
-                                         interact(netlag(capital, WTO_member_growth),
-                                                  netlag(capital, hga), lag = 2, center = TRUE), coefname = "totality")
-                               , re.node = TRUE, time.linear = TRUE)
-screenreg(tnam_wto_induscorr_trade, digits = 10)
-
-trip_doubles<-tnam(capital ~ covariate(capital, lag = 1) + covariate(gdp_at_threse, coefname = "GDP/Capita")
+                          + netlag(capital, industry_sim, lag = 1, coefname = "Industry_corr_ij")
+                          + interact(netlag(capital, WTO_member_growth),
+                                     netlag(capital, industry_sim), lag = 1, coefname = "WTO*Industry_corr_ij")
+                          , re.node = TRUE, time.linear = TRUE)
+tnamc_wto_sep_induscorr<-tnam(capital ~ 
+                            #    covariate(capital, lag = 1) + 
+                                covariate(gdp_at_threse, coefname = "GDP/Capita")
                               + netlag(capital, WTO_member_growth, lag = 1, coefname = "WTO_mem")
                               + netlag(capital, industry_sim, lag = 1, coefname = "Industry_corr_ij")
                               + netlag(capital, hga, lag = 1, coefname = "Trade_ij")
@@ -842,15 +810,59 @@ trip_doubles<-tnam(capital ~ covariate(capital, lag = 1) + covariate(gdp_at_thre
                                          netlag(capital, hga), lag = 1, , coefname = "WTO*Trade_ij")
                               + interact(netlag(capital, WTO_member_growth),
                                          netlag(capital, industry_sim), lag = 1, coefname = "WTO*Industry_corr_ij")
-                              +interact(netlag(capital, hga),
-                                        netlag(capital, industry_sim), lag = 1, coefname = "trade*Industry_corr_ij")
-                   +interact(interact(netlag(capital, WTO_member_growth),
-                                      netlag(capital, industry_sim), lag = 2, center = TRUE),
-                             interact(netlag(capital, WTO_member_growth),
-                                      netlag(capital, hga), lag = 2, center = TRUE), coefname = "totality")
                               , re.node = TRUE, time.linear = TRUE)
+screenreg(list(tnamc_wto_trade, tnamc_wto_induscorr, tnamc_wto_sep_induscorr), single.row = FALSE, digits = 7)
+texreg(list(tnamc_wto_trade, tnamc_wto_induscorr, tnamc_wto_sep_induscorr), single.row = FALSE, digits = 4)
+
+
+
+tnam_wto_induscorr_trade<-tnam(capital ~ 
+                               #  covariate(labor, lag = 1) + 
+                                 covariate(gdp_at_threse, coefname = "GDP/Capita")
+                               + netlag(capital, WTO_member_growth, lag = 1, coefname = "WTO_mem")
+                               + netlag(capital, industry_sim, lag = 1)
+                               +netlag(capital, hga, lag = 1)
+                               + interact(netlag(capital, WTO_member_growth),
+                                          netlag(capital, industry_sim), lag = 1, center = TRUE)
+                               + interact(netlag(capital, WTO_member_growth),
+                                          netlag(capital, hga), lag = 1, center = TRUE)
+                               +interact(interact(netlag(capital, WTO_member_growth),
+                                                  netlag(capital, industry_sim), lag = 1, center = TRUE),
+                                         interact(netlag(capital, WTO_member_growth),
+                                                  netlag(capital, hga), lag = 1, center = TRUE), coefname = "totality")
+                               , re.node = TRUE, time.linear = TRUE)
+screenreg(tnam_wto_induscorr_trade, digits = 10)
+tnam_wto_induscorr_trade<-tnam(capital ~ 
+                                 #covariate(capital, lag = 1) + 
+                                 covariate(gdp_at_threse, coefname = "GDP/Capita")
+                               +interact(interact(netlag(capital, WTO_member_growth),
+                                                  netlag(capital, industry_sim), lag = 2, center = TRUE),
+                                         interact(netlag(capital, WTO_member_growth),
+                                                  netlag(capital, hga), lag = 2, center = TRUE), coefname = "totality")
+                               , re.node = TRUE, time.linear = TRUE)
+screenreg(tnam_wto_induscorr_trade, digits = 10)
+
+trip_doubles<-tnam(capital ~ 
+                     covariate(capital, lag = 1) + 
+                     covariate(gdp_at_threse, coefname = "GDP/Capita")
+                   + netlag(capital, WTO_member_growth, lag = 1, coefname = "WTO_mem")
+                   + netlag(capital, industry_sim, lag = 1, coefname = "Industry_corr_ij")
+                   + netlag(capital, hga, lag = 1, coefname = "Trade_ij")
+                   + interact(netlag(capital, WTO_member_growth),
+                              netlag(capital, hga), lag = 1, , coefname = "WTO*Trade_ij")
+                   + interact(netlag(capital, WTO_member_growth),
+                              netlag(capital, industry_sim), lag = 1, coefname = "WTO*Industry_corr_ij")
+                   +interact(netlag(capital, hga),
+                             netlag(capital, industry_sim), lag = 1, coefname = "trade*Industry_corr_ij")
+                 #  +interact(interact(netlag(capital, WTO_member_growth),
+                  #                    netlag(capital, industry_sim), lag = 1, center = TRUE),
+                   #          interact(netlag(capital, WTO_member_growth),
+                    #                  netlag(capital, hga), lag = 1, center = TRUE), coefname = "totality")
+                   , re.node = TRUE, time.linear = TRUE)
 screenreg(trip_doubles, digits = 10)
-trip_doubles<-tnam(labor ~ covariate(labor, lag = 1) + covariate(gdp_at_threse, coefname = "GDP/Capita")
+trip_doubles<-tnam(labor ~ 
+                     covariate(labor, lag = 1) + 
+                     covariate(gdp_at_threse, coefname = "GDP/Capita")
                    + netlag(labor, WTO_member_growth, lag = 1, coefname = "WTO_mem")
                    + netlag(labor, industry_sim, lag = 1, coefname = "Industry_corr_ij")
                    + netlag(labor, hga, lag = 1, coefname = "Trade_ij")
@@ -860,20 +872,20 @@ trip_doubles<-tnam(labor ~ covariate(labor, lag = 1) + covariate(gdp_at_threse, 
                               netlag(labor, industry_sim), lag = 1, coefname = "WTO*Industry_corr_ij")
                    +interact(netlag(labor, hga),
                              netlag(labor, industry_sim), lag = 1, coefname = "trade*Industry_corr_ij")
-                   +interact(interact(netlag(labor, WTO_member_growth),
-                                      netlag(labor, industry_sim), lag = 2, center = TRUE),
-                             interact(netlag(labor, WTO_member_growth),
-                                      netlag(labor, hga), lag = 2, center = TRUE), coefname = "totality")
+              #     +interact(interact(netlag(labor, WTO_member_growth),
+               #                       netlag(labor, industry_sim), lag = 1, center = TRUE),
+                #             interact(netlag(labor, WTO_member_growth),
+                 #                     netlag(labor, hga), lag = 1, center = TRUE), coefname = "totality")
                    , re.node = TRUE, time.linear = TRUE)
-screenreg(trip_doubles, digits = 10)
+screenreg(trip_doubles, digits = 12)
 
 
 
- + covariate(WTO_members,lag = 1)
-             +covariate(gdp_at_threse)
-             +covariate(poli)
-             +centrality(hga, type = "betweenness"),
-             re.node = T, time.linear = T))
++ covariate(WTO_members,lag = 1)
++covariate(gdp_at_threse)
++covariate(poli)
++centrality(hga, type = "betweenness"),
+re.node = T, time.linear = T))
 
 
 
@@ -881,7 +893,7 @@ screenreg(trip_doubles, digits = 10)
 
 gdp_at_threse_sim
 summary(tnam(labor ~ covariate(labor,lag = 1)
-               + covariate(WTO_members,lag = 1)
+             + covariate(WTO_members,lag = 1)
              +covariate(gdp_at_threse)
              +covariate(poli)
              +centrality(hga, type = "betweenness"),
@@ -901,8 +913,8 @@ summary(tnam(capital~covariate(capital,lag = 1)
 ###worst case scenario, proceed with something like the following
 summary(tnam(labor ~ 
                #covariate(WTO_members,lag = 1)
-             #+attribsim(labor, poli)
-             netlag(labor, hga, lag = 1)
+               #+attribsim(labor, poli)
+               netlag(labor, hga, lag = 1)
              +netlag(labor, hga, lag = 1)
              #+centrality(hga, type = "betweenness")
              #+clustering(hga)
@@ -914,7 +926,7 @@ summary(tnam(labor~netlag(labor, industry_sim, lag = 1), re.node = TRUE))
 summary(tnam(labor~interact((WTO_member_growth), as.factor(WTO_member_growth), lag = 1), re.node = TRUE))
 
 summary(tnam(labor~covariate(gdp_at_threse)))
-               netlag(labor$t2, industry_sim$t2)))
+netlag(labor$t2, industry_sim$t2)))
 
 attribsim(labor, interact(netlag(labor, WTO_member_growth), netlag(labor, industry_sim)))
 
@@ -936,71 +948,71 @@ summary(tnam(labor~interact(WTO_members, WTO_members, lag = 1),
 WTO_member_growth
 netlag(labor$t2, industry_sim$t2)))
 summary(tnam(labor~interact(WTO_members, WTO_members))
+        
+        netlag(labor, WTO_member_growth)
+        summary(tnam(labor~interact(netlag(labor, WTO_member_growth), netlag(labor, industry_sim)), re.node = TRUE))
+        summary(tnam(labor~interact(netlag(labor, WTO_member_growth), netlag(labor, hga)), re.node = TRUE))
+        summary(tnam(labor~netlag(labor, WTO_member_growth, lag = 2)+netlag(labor, industry_sim, lag = 2)
+                     +interact(netlag(labor, WTO_member_growth, lag = 2), netlag(labor, industry_sim, lag = 2))
+                     +interact(netlag(labor, WTO_member_growth, lag = 2), netlag(labor, hga, lag = 2))
+                     +interact(interact(netlag(labor, WTO_member_growth, lag = 2), 
+                                        netlag(labor, hga, lag = 2)), interact(netlag(labor, WTO_member_growth, lag = 2), 
+                                                                               netlag(labor, hga, lag = 2))), re.node = TRUE))
+        
+        
+        
+        summary(tnam(labor~attribsim(WTO_member_growth, industry_sim, lag = 1), re.node = TRUE))
+        summary(tnam(labor~interact(WTO_member_growth, industry_sim, lag = 1), re.node = TRUE))
+        
+        WTO_member_growth
+        
+        summary(tnam(labor ~ covariate(gdp_at_threse, coefname = "gdp_cap")
+                     + attribsim(labor, gdp_at_threse)
+                     #covariate(gdp_at_threse, coefname = "gdp_cap")
+                     +covariate(poli, coefname = "polity")
+                     +netlag(labor, hga, lag = 3, coefname = "trade")
+                     +netlag(labor, WTO_member_growth, lag = 3, coefname = "wto")
+                     +interact(netlag(labor, hga, lag = 3),
+                               netlag(labor, WTO_member_growth, lag = 3)),
+                     re.node = TRUE))
+        
+        summary(tnam(labor ~ attribsim(labor, gdp_at_threse), time.linear  = TRUE))
+        #covariate(gdp_at_threse, coefname = "gdp_cap")
+        +covariate(poli, coefname = "polity")
+        +netlag(labor, hga, lag = 3, coefname = "trade")
+        +netlag(labor, WTO_member_growth, lag = 3, coefname = "wto")
+        +interact(netlag(labor, hga, lag = 3),
+                  netlag(labor, WTO_member_growth, lag = 3))
+        library(tnam)
+        ?attribsim
+        testingground<-tnamdata(1~attribsim(WTO_member_growth, labor))
+        pop_at_threse=
+          labor
+        structsim(labor, hga)
+        nrow(WTO_member_growth$t1)
+        ####
+        summary(tnam(capital ~ interact(structsim(labor, hga), structsim(labor, WTO_member_growth)), re.node = TRUE, time.linear = TRUE))
+        tnamdata(labor~interact(structsim(labor, hga), structsim(labor, WTO_member_growth)))
+        #####
+        labor$t3
+        summary(tnam(labor ~ structsim(labor, attribsim(labor,gdp_at_threse))))
+        
+        covariate(gdp_at_threse, coefname = "gdp_cap")
+        + covariate(poli, coefname = "poli")
+        +covariate(pop_at_threse, coefname = "pop")
+        +attribsim(labor, pop_at_threse), re.node = TRUE))
++interact(WTO_member_growth, labor), re.node = T))
+#covariate(gdp_at_threse, coefname = "gdp_cap")
++netlag(labor, hga, lag = 1, coefname = "trade")
++netlag(labor, WTO_member_growth, lag = 1, coefname = "wto")
+#+interact(netlag(labor, hga, lag = 1),
+#          netlag(labor, WTO_member_growth, lag = 1))
+, re.node = TRUE))
 
-netlag(labor, WTO_member_growth)
-summary(tnam(labor~interact(netlag(labor, WTO_member_growth), netlag(labor, industry_sim)), re.node = TRUE))
-summary(tnam(labor~interact(netlag(labor, WTO_member_growth), netlag(labor, hga)), re.node = TRUE))
-summary(tnam(labor~netlag(labor, WTO_member_growth, lag = 2)+netlag(labor, industry_sim, lag = 2)
-               +interact(netlag(labor, WTO_member_growth, lag = 2), netlag(labor, industry_sim, lag = 2))
-             +interact(netlag(labor, WTO_member_growth, lag = 2), netlag(labor, hga, lag = 2))
-               +interact(interact(netlag(labor, WTO_member_growth, lag = 2), 
-                                 netlag(labor, hga, lag = 2)), interact(netlag(labor, WTO_member_growth, lag = 2), 
-                                                               netlag(labor, hga, lag = 2))), re.node = TRUE))
 
-
-
-summary(tnam(labor~attribsim(WTO_member_growth, industry_sim, lag = 1), re.node = TRUE))
-summary(tnam(labor~interact(WTO_member_growth, industry_sim, lag = 1), re.node = TRUE))
-
-WTO_member_growth
-
-summary(tnam(labor ~ covariate(gdp_at_threse, coefname = "gdp_cap")
-             + attribsim(labor, gdp_at_threse)
-               #covariate(gdp_at_threse, coefname = "gdp_cap")
-             +covariate(poli, coefname = "polity")
-             +netlag(labor, hga, lag = 3, coefname = "trade")
-             +netlag(labor, WTO_member_growth, lag = 3, coefname = "wto")
-             +interact(netlag(labor, hga, lag = 3),
-                       netlag(labor, WTO_member_growth, lag = 3)),
-             re.node = TRUE))
-
-summary(tnam(labor ~ attribsim(labor, gdp_at_threse), time.linear  = TRUE))
-             #covariate(gdp_at_threse, coefname = "gdp_cap")
-             +covariate(poli, coefname = "polity")
-             +netlag(labor, hga, lag = 3, coefname = "trade")
-             +netlag(labor, WTO_member_growth, lag = 3, coefname = "wto")
-             +interact(netlag(labor, hga, lag = 3),
-                       netlag(labor, WTO_member_growth, lag = 3))
-library(tnam)
-?attribsim
-testingground<-tnamdata(1~attribsim(WTO_member_growth, labor))
-pop_at_threse=
-labor
-structsim(labor, hga)
-nrow(WTO_member_growth$t1)
-####
-summary(tnam(capital ~ interact(structsim(labor, hga), structsim(labor, WTO_member_growth)), re.node = TRUE, time.linear = TRUE))
-tnamdata(labor~interact(structsim(labor, hga), structsim(labor, WTO_member_growth)))
-#####
-labor$t3
-summary(tnam(labor ~ structsim(labor, attribsim(labor,gdp_at_threse))))
-
-               covariate(gdp_at_threse, coefname = "gdp_cap")
-             + covariate(poli, coefname = "poli")
-             +covariate(pop_at_threse, coefname = "pop")
-             +attribsim(labor, pop_at_threse), re.node = TRUE))
-             +interact(WTO_member_growth, labor), re.node = T))
-             #covariate(gdp_at_threse, coefname = "gdp_cap")
-             +netlag(labor, hga, lag = 1, coefname = "trade")
-             +netlag(labor, WTO_member_growth, lag = 1, coefname = "wto")
-           #+interact(netlag(labor, hga, lag = 1),
-           #          netlag(labor, WTO_member_growth, lag = 1))
-           , re.node = TRUE))
-           
-           
-             +interact(netlag(labor, hga, lag = 3),
-                       netlag(labor, WTO_member_growth, lag = 3)),
-             re.node = TRUE))
++interact(netlag(labor, hga, lag = 3),
+          netlag(labor, WTO_member_growth, lag = 3)),
+re.node = TRUE))
 
 labor_diff<-labor$t5-labor$t1
 gdp_diff<-gdp_at_threse$t5-gdp_at_threse$t1
@@ -1009,20 +1021,20 @@ hga_diff<-hga$t5-hga$t2
 WTO_diff<-WTO_member_growth$t5-WTO_member_growth$t2
 labor_diff
 summary(tnam(labor_diff ~ covariate(gdp_sim_diff, coefname = "gdp_cap")))
-             #+ attribsim(labor_diff, gdp_sim_diff)
-             #covariate(gdp_at_threse, coefname = "gdp_cap")
-             #+covariate(poli, coefname = "polity")
-             #+netlag(labor_diff, hga_diff, coefname = "trade")
-            # +netlag(labor_diff, WTO_diff, coefname = "wto")
-            # +interact(netlag(labor_diff, hga_diff),
-                      # netlag(labor_diff, WTO_diff))))
+#+ attribsim(labor_diff, gdp_sim_diff)
+#covariate(gdp_at_threse, coefname = "gdp_cap")
+#+covariate(poli, coefname = "polity")
+#+netlag(labor_diff, hga_diff, coefname = "trade")
+# +netlag(labor_diff, WTO_diff, coefname = "wto")
+# +interact(netlag(labor_diff, hga_diff),
+# netlag(labor_diff, WTO_diff))))
 
 
-             #+centrality(hga, type = "betweenness")
-             #+clustering(hga)
-             #+ weightlag(labor, hga)
-             #, re.node = T, 
-             #time.linear = T))
+#+centrality(hga, type = "betweenness")
+#+clustering(hga)
+#+ weightlag(labor, hga)
+#, re.node = T, 
+#time.linear = T))
 
 gdp_at_threse_sim
 
@@ -1036,7 +1048,7 @@ summary(tnam(labor ~ covariate(gdp_at_threse, coefname = "gdp_cap")
 
 summary(tnam(labor ~ 
                #covariate(WTO_members,lag = 1)
-             +attribsim(labor, poli)
+               +attribsim(labor, poli)
              interact(netlag(labor, WTO_evo), netlag(labor, hga))
              #+centrality(hga, type = "betweenness")
              #+clustering(hga)
